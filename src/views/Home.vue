@@ -75,22 +75,17 @@
         <b-collapse visible id="collapse-1" class="mt-2">
           <b-card>
             <b-row>
-              <!-- <b-col sm="5" class="lesspadding">
-              <v-select :options="leagues.option" v-model="leagues.chosenL" :searchable="false" :clearable="false" :filterable="false"></v-select>
-            </b-col> -->
               <b-col sm="3">
                 <multiselect :options="serverOptions" v-model="storeServerString" @input="serverChange" :showLabels="false" :searchable="false" :allow-empty="false"></multiselect>
               </b-col>
               <b-col sm="5">
                 <multiselect :options="leagues.option" v-model="leagues.chosenL" :showLabels="false" :searchable="false" :allow-empty="false"></multiselect>
               </b-col>
+              <b-col sm="3">
+                <multiselect :options="tradeModes.option" v-model="tradeModes.chosenObj" label="label" :showLabels="false" :searchable="false" :allow-empty="false"></multiselect>
+              </b-col>
             </b-row>
             <b-row class="lesspadding" style="padding-top: 5px; padding-left: 2px;">
-              <b-col sm="3">
-                <b-form-checkbox class="float-right" style="padding-top: 5px;" v-model="isOnline" :disabled="isCounting" switch :inline="false">
-                  <b>只顯示線上</b>
-                </b-form-checkbox>
-              </b-col>
               <b-col sm="2">
                 <b-form-checkbox class="float-right" style="padding-top: 5px;" v-model="isPriced" :disabled="true" switch>
                   <b>{{ pricedText }}</b>
@@ -459,7 +454,6 @@ export default {
       isApiError: false,
       apiErrorStr: '',
       isCounting: false,
-      isOnline: true,
       isPriced: true,
       isItem: false,
       isMap: false,
@@ -521,6 +515,34 @@ export default {
       leagues: { // 搜尋聯盟
         option: [],
         chosenL: ""
+      },
+      tradeModes: { // 交易模式
+        option: [
+          {
+            label: "即刻購買及面對面交易",
+            prop: "available"
+          },
+          {
+            label: "即刻購買",
+            prop: "securable"
+          },
+          {
+            label: "面對面交易(聯盟在線)",
+            prop: "onlineleague"
+          },
+          {
+            label: "面對面交易(在線)",
+            prop: "online"
+          },
+          {
+            label: "任何",
+            prop: "any"
+          }
+        ],
+        chosenObj: {
+          label: "即刻購買",
+          prop: "securable"
+        }
       },
       // gggLeagues: [], // 暫存 ggg 聯盟字串
       raritySet: { // 稀有度設定
@@ -733,7 +755,7 @@ export default {
       searchJson_Def: {
         "query": {
           "status": {
-            "option": "online"
+            "option": "securable"
           },
           "stats": [{
             "type": "and",
@@ -3114,14 +3136,14 @@ export default {
         this.searchTrade(this.searchJson)
       }
     },
-    isOnline: _.debounce(function () {
-      let option = this.isOnline ? 'online' : 'any'
+    'tradeModes.chosenObj': function () {
+      let option = this.tradeModes.chosenObj.prop
+      console.log(option)
       this.searchJson_Def.query.status.option = option
       if (this.isSearchJson && JSON.stringify(this.searchJson_Def) !== JSON.stringify(this.searchJson)) {
         this.searchJson.query.status.option = option
-        this.searchTrade(this.searchJson)
       }
-    }, 500),
+    },
     isPriced: function () {
       this.fetchID.length = 0
       let option = this.isPriced ? 'priced' : 'unpriced'
