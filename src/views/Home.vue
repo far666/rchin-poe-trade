@@ -426,6 +426,7 @@ import duplicateStatsData from "../assets/poe/duplicateStats.json";
 // import usStatsData from "../assets/poe/stats_us.json";
 import poedbTWJson from "../assets/poe/poedb-tw.json";
 
+
 const _ = require('lodash');
 const stringSimilarity = require('string-similarity');
 const {
@@ -878,6 +879,17 @@ export default {
     this.getAllAPI();
   },
   methods: {
+    updateAllStats() {
+      this.axios.get(`https://pathofexile.tw/api/trade/data/stats`, )
+        .then((response) => {
+          let result = response.data.result
+          this.allStats.result = result
+          console.log(result)
+        })
+        .catch(function (error) {
+          console.log(error);
+        })
+    },
     initLocalStorage() {
       this.isPriceCollapse = localStorage.getItem('isPriceCollapse') ? JSON.parse(localStorage.getItem('isPriceCollapse')) : true
       if (this.isPriceCollapse) {
@@ -886,6 +898,9 @@ export default {
         }
       } else {
         delete this.searchJson_Def.query.filters.trade_filters.filters.collapse
+      }
+      if (typeof this.updateAllStats === 'function') {
+        this.updateAllStats()
       }
     },
     checkAPI() {
@@ -1135,9 +1150,6 @@ export default {
     },
     statsAPI() { // 詞綴 API
       let vm = this
-      // this.axios.get(`https://pathofexile.tw/api/trade/data/stats`, )
-      //   .then((response) => {
-      //     let result = response.data.result
       let result = this.allStats.result
       result[result.findIndex(e => e.id === "pseudo")].entries.forEach((element, index) => { // 偽屬性
         let text = element.text
@@ -3013,12 +3025,17 @@ export default {
           }
         }
         if (item.indexOf('未鑑定') === -1) { // 已鑑定傳奇
+          let rarityFlag = 0
+          if (searchName.indexOf('穢生') > -1) {
+            searchName = searchName.substring(3)
+            rarityFlag = 1
+          }
           this.searchJson.query.name = this.replaceString(searchName)
           this.searchJson.query.type = this.replaceString(itemBasic)
           this.raritySet.isSearch = true
           this.isRaritySearch()
           if (this.isItem) {
-            this.itemStatsAnalysis(itemArray, 1)
+            this.itemStatsAnalysis(itemArray, rarityFlag)
           }
         } else { // 未鑑定傳奇(但會搜到相同基底)
           if (searchName.indexOf('精良的') > -1) { // 未鑑定的品質傳奇物品
